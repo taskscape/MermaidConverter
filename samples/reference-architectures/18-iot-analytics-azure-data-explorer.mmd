@@ -1,0 +1,22 @@
+%% m2d: strict = true %%
+%% m2d: title = IoT Analytics With Azure Data Explorer %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/solution-ideas/articles/iot-azure-data-explorer %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_iot_IotHub__device_ingestion["IoT Hub"]
+  az_iot_EventHubs__event_hubs["Event Hubs"]
+  az_iot_StreamAnalyticsJobs__stream_analytics["Stream Analytics job"]
+  az_databases_AzureDataExplorerClusters__adx_cluster["Azure Data Explorer cluster"]
+  az_storage_DataLakeStorage__cold_path["Data Lake Storage cold path"]
+  az_iot_FunctionApps__alert_function["Function App alerts"]
+  az_analytics_PowerBiEmbedded__power_bi["Power BI dashboard"]
+  az_monitor_Monitor__monitor["Azure Monitor"]
+
+  az_iot_IotHub__device_ingestion -->|device telemetry| az_iot_EventHubs__event_hubs
+  az_iot_EventHubs__event_hubs -->|near real-time stream| az_iot_StreamAnalyticsJobs__stream_analytics
+  az_iot_EventHubs__event_hubs -->|archive capture| az_storage_DataLakeStorage__cold_path
+  az_iot_StreamAnalyticsJobs__stream_analytics -->|curated telemetry| az_databases_AzureDataExplorerClusters__adx_cluster
+  az_databases_AzureDataExplorerClusters__adx_cluster -->|query results| az_analytics_PowerBiEmbedded__power_bi
+  az_databases_AzureDataExplorerClusters__adx_cluster -->|anomaly trigger| az_iot_FunctionApps__alert_function
+  az_iot_IotHub__device_ingestion -->|device metrics| az_monitor_Monitor__monitor
+  az_databases_AzureDataExplorerClusters__adx_cluster -->|cluster metrics| az_monitor_Monitor__monitor

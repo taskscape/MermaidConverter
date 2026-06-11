@@ -1,0 +1,18 @@
+%% m2d: strict = true %%
+%% m2d: title = Basic Web Application %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/web-apps/app-service/architectures/basic-web-app %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_identity_ActiveDirectory__entra_id["Microsoft Entra ID"]
+  az_appservices_AppServicePlans__app_service_plan["App Service plan"]
+  az_appservices_AppServices__web_app["App Service web app"]
+  az_databases_SQLDatabase__application_db["Azure SQL Database"]
+  az_monitor_ApplicationInsights__app_insights["Application Insights"]
+  az_managementgovernance_Monitor__azure_monitor["Azure Monitor"]
+
+  az_identity_ActiveDirectory__entra_id -->|authenticates users| az_appservices_AppServices__web_app
+  az_appservices_AppServicePlans__app_service_plan -->|hosts| az_appservices_AppServices__web_app
+  az_appservices_AppServices__web_app -->|connection string or managed identity| az_databases_SQLDatabase__application_db
+  az_appservices_AppServices__web_app -->|request telemetry| az_monitor_ApplicationInsights__app_insights
+  az_databases_SQLDatabase__application_db -->|database metrics| az_managementgovernance_Monitor__azure_monitor
+  az_monitor_ApplicationInsights__app_insights -->|workspace telemetry| az_managementgovernance_Monitor__azure_monitor

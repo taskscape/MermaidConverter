@@ -1,0 +1,21 @@
+%% m2d: strict = true %%
+%% m2d: title = Near Real-Time Lakehouse With Synapse %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/example-scenario/data/real-time-lakehouse-data-processing %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_analytics_EventHubs__change_events["Event Hubs change events"]
+  az_analytics_DataFactories__data_factory["Data Factory pipelines"]
+  az_storage_DataLakeStorage__landing_zone["Data Lake Storage landing zone"]
+  az_analytics_AzureSynapseAnalytics__synapse_workspace["Synapse workspace"]
+  az_databases_SQLDataWarehouses__dedicated_pool["Dedicated SQL pool"]
+  az_databases_AzureCosmosDb__operational_projection["Azure Cosmos DB projection"]
+  az_aimachinelearning_CognitiveSearch__ai_search["Azure AI Search index"]
+  az_analytics_PowerBiEmbedded__power_bi["Power BI reports"]
+
+  az_analytics_EventHubs__change_events -->|change data stream| az_storage_DataLakeStorage__landing_zone
+  az_analytics_DataFactories__data_factory -->|batch ingestion| az_storage_DataLakeStorage__landing_zone
+  az_storage_DataLakeStorage__landing_zone -->|raw and validated zones| az_analytics_AzureSynapseAnalytics__synapse_workspace
+  az_analytics_AzureSynapseAnalytics__synapse_workspace -->|curated warehouse data| az_databases_SQLDataWarehouses__dedicated_pool
+  az_analytics_AzureSynapseAnalytics__synapse_workspace -->|serving projection| az_databases_AzureCosmosDb__operational_projection
+  az_analytics_AzureSynapseAnalytics__synapse_workspace -->|searchable enrichment| az_aimachinelearning_CognitiveSearch__ai_search
+  az_databases_SQLDataWarehouses__dedicated_pool -->|analytics model| az_analytics_PowerBiEmbedded__power_bi

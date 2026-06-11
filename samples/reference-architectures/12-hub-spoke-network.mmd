@@ -1,0 +1,32 @@
+%% m2d: strict = true %%
+%% m2d: title = Hub-Spoke Network With Spoke-To-Spoke Routing %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/virtual-network-peering %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  subgraph az_hub["Connectivity hub"]
+    az_networking_VirtualNetworks__hub_vnet["Hub virtual network"]
+    az_networking_Firewalls__hub_firewall["Azure Firewall"]
+    az_networking_Bastions__hub_bastion["Azure Bastion"]
+    az_network_ExpressrouteCircuits__expressroute["ExpressRoute circuit"]
+    az_network_VirtualNetworkGateways__vpn_gateway["VPN gateway"]
+  end
+
+  subgraph az_spokes["Application spokes"]
+    az_networking_VirtualNetworks__spoke_a["Spoke A virtual network"]
+    az_networking_VirtualNetworks__spoke_b["Spoke B virtual network"]
+    az_networking_VirtualNetworks__spoke_c["Spoke C virtual network"]
+    az_network_RouteTables__spoke_routes["User-defined route tables"]
+    az_networking_PrivateLink__shared_private_link["Private Link services"]
+  end
+
+  az_network_ExpressrouteCircuits__expressroute -->|private WAN connectivity| az_networking_VirtualNetworks__hub_vnet
+  az_network_VirtualNetworkGateways__vpn_gateway -->|backup tunnel| az_networking_VirtualNetworks__hub_vnet
+  az_networking_VirtualNetworks__hub_vnet -->|peering| az_networking_VirtualNetworks__spoke_a
+  az_networking_VirtualNetworks__hub_vnet -->|peering| az_networking_VirtualNetworks__spoke_b
+  az_networking_VirtualNetworks__hub_vnet -->|peering| az_networking_VirtualNetworks__spoke_c
+  az_networking_Firewalls__hub_firewall -->|central inspection| az_network_RouteTables__spoke_routes
+  az_network_RouteTables__spoke_routes -->|forced tunnel| az_networking_VirtualNetworks__spoke_a
+  az_network_RouteTables__spoke_routes -->|forced tunnel| az_networking_VirtualNetworks__spoke_b
+  az_network_RouteTables__spoke_routes -->|forced tunnel| az_networking_VirtualNetworks__spoke_c
+  az_networking_VirtualNetworks__spoke_a -->|private PaaS access| az_networking_PrivateLink__shared_private_link
+  az_networking_VirtualNetworks__spoke_b -->|private PaaS access| az_networking_PrivateLink__shared_private_link

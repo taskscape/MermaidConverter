@@ -1,0 +1,27 @@
+%% m2d: strict = true %%
+%% m2d: title = Baseline Foundry Chat And RAG Architecture %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/ai-ml/architecture/baseline-microsoft-foundry-chat %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_network_FrontDoors__front_door["Azure Front Door"]
+  az_appservices_AppServices__chat_ui["App Service chat UI"]
+  az_identity_ManagedIdentities__managed_identity["Managed identity"]
+  az_networking_PrivateLink__private_endpoints["Private Link endpoints"]
+  az_ml_AzureOpenAI__openai_models["Azure OpenAI models"]
+  az_aimachinelearning_AIStudio__foundry_project["Foundry project"]
+  az_aimachinelearning_CognitiveSearch__ai_search["Azure AI Search"]
+  az_databases_AzureCosmosDb__conversation_store["Azure Cosmos DB conversations"]
+  az_storage_StorageAccounts__document_storage["Storage account documents"]
+  az_security_KeyVaults__key_vault["Key Vault"]
+  az_monitor_ApplicationInsights__app_insights["Application Insights"]
+
+  az_network_FrontDoors__front_door -->|global HTTPS ingress| az_appservices_AppServices__chat_ui
+  az_appservices_AppServices__chat_ui -->|uses identity| az_identity_ManagedIdentities__managed_identity
+  az_appservices_AppServices__chat_ui -->|private service access| az_networking_PrivateLink__private_endpoints
+  az_networking_PrivateLink__private_endpoints -->|agent and model calls| az_aimachinelearning_AIStudio__foundry_project
+  az_aimachinelearning_AIStudio__foundry_project -->|model inference| az_ml_AzureOpenAI__openai_models
+  az_aimachinelearning_AIStudio__foundry_project -->|retrieval queries| az_aimachinelearning_CognitiveSearch__ai_search
+  az_storage_StorageAccounts__document_storage -->|indexed content| az_aimachinelearning_CognitiveSearch__ai_search
+  az_appservices_AppServices__chat_ui -->|conversation state| az_databases_AzureCosmosDb__conversation_store
+  az_identity_ManagedIdentities__managed_identity -->|secrets and keys| az_security_KeyVaults__key_vault
+  az_appservices_AppServices__chat_ui -->|telemetry| az_monitor_ApplicationInsights__app_insights

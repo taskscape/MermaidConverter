@@ -1,0 +1,21 @@
+%% m2d: strict = true %%
+%% m2d: title = AKS Microservices Basic Architecture %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_devops_Pipelines__build_pipeline["Azure Pipelines"]
+  az_compute_ContainerRegistries__acr["Azure Container Registry"]
+  az_network_ApplicationGateway__ingress_gateway["Application Gateway ingress"]
+  az_compute_KubernetesServices__aks["Azure Kubernetes Service"]
+  az_databases_CacheRedis__redis["Azure Managed Redis"]
+  az_databases_SQLDatabase__service_db["Azure SQL Database"]
+  az_identity_ActiveDirectory__entra_id["Microsoft Entra ID"]
+  az_monitor_LogAnalyticsWorkspaces__log_analytics["Log Analytics workspace"]
+
+  az_devops_Pipelines__build_pipeline -->|pushes images| az_compute_ContainerRegistries__acr
+  az_compute_ContainerRegistries__acr -->|pulls images| az_compute_KubernetesServices__aks
+  az_network_ApplicationGateway__ingress_gateway -->|routes HTTP traffic| az_compute_KubernetesServices__aks
+  az_compute_KubernetesServices__aks -->|identity integration| az_identity_ActiveDirectory__entra_id
+  az_compute_KubernetesServices__aks -->|cache access| az_databases_CacheRedis__redis
+  az_compute_KubernetesServices__aks -->|service data| az_databases_SQLDatabase__service_db
+  az_compute_KubernetesServices__aks -->|container insights| az_monitor_LogAnalyticsWorkspaces__log_analytics

@@ -1,0 +1,18 @@
+%% m2d: strict = true %%
+%% m2d: title = Static Content Hosting %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/patterns/static-content-hosting %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_network_DNSZones__custom_dns["Custom DNS zone"]
+  az_network_FrontDoors__front_door["Azure Front Door"]
+  az_network_CDNProfiles__cdn["Azure CDN profile"]
+  az_storage_StorageAccounts__static_site["Storage account static website"]
+  az_storage_BlobStorage__content["Static content container"]
+  az_monitor_Monitor__monitor["Azure Monitor"]
+
+  az_network_DNSZones__custom_dns -->|resolves custom domain| az_network_FrontDoors__front_door
+  az_network_FrontDoors__front_door -->|routes HTTPS requests| az_network_CDNProfiles__cdn
+  az_network_CDNProfiles__cdn -->|caches public objects| az_storage_StorageAccounts__static_site
+  az_storage_StorageAccounts__static_site -->|serves files| az_storage_BlobStorage__content
+  az_network_FrontDoors__front_door -->|access logs and metrics| az_monitor_Monitor__monitor
+  az_storage_StorageAccounts__static_site -->|storage metrics| az_monitor_Monitor__monitor

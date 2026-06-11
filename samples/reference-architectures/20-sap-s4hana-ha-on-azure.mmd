@@ -1,0 +1,29 @@
+%% m2d: strict = true %%
+%% m2d: title = SAP S/4HANA High Availability On Azure %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/guide/sap/sap-s4hana %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_network_ExpressrouteCircuits__expressroute["ExpressRoute circuit"]
+  az_networking_VirtualNetworks__sap_vnet["SAP virtual network"]
+  az_network_LoadBalancers__sap_load_balancer["Internal Load Balancer"]
+  az_compute_AvailabilitySets__app_availability_set["Application availability set"]
+  az_compute_VirtualMachine__sap_app_vm_a["SAP application VM A"]
+  az_compute_VirtualMachine__sap_app_vm_b["SAP application VM B"]
+  az_compute_SAPHANAOnAzure__hana_db["SAP HANA on Azure"]
+  az_storage_AzureNetappFiles__shared_files["Azure NetApp Files"]
+  az_security_KeyVaults__key_vault["Key Vault"]
+  az_managementgovernance_RecoveryServicesVaults__backup_vault["Recovery Services vault"]
+  az_monitor_AzureMonitorsForSAPSolutions__sap_monitor["Azure Monitor for SAP solutions"]
+
+  az_network_ExpressrouteCircuits__expressroute -->|private enterprise connectivity| az_networking_VirtualNetworks__sap_vnet
+  az_networking_VirtualNetworks__sap_vnet -->|internal traffic| az_network_LoadBalancers__sap_load_balancer
+  az_network_LoadBalancers__sap_load_balancer -->|distributes SAP app traffic| az_compute_AvailabilitySets__app_availability_set
+  az_compute_AvailabilitySets__app_availability_set -->|contains| az_compute_VirtualMachine__sap_app_vm_a
+  az_compute_AvailabilitySets__app_availability_set -->|contains| az_compute_VirtualMachine__sap_app_vm_b
+  az_compute_VirtualMachine__sap_app_vm_a -->|database calls| az_compute_SAPHANAOnAzure__hana_db
+  az_compute_VirtualMachine__sap_app_vm_b -->|database calls| az_compute_SAPHANAOnAzure__hana_db
+  az_compute_VirtualMachine__sap_app_vm_a -->|shared transport and profiles| az_storage_AzureNetappFiles__shared_files
+  az_compute_VirtualMachine__sap_app_vm_b -->|shared transport and profiles| az_storage_AzureNetappFiles__shared_files
+  az_compute_SAPHANAOnAzure__hana_db -->|backup policy| az_managementgovernance_RecoveryServicesVaults__backup_vault
+  az_compute_VirtualMachine__sap_app_vm_a -->|secrets and certificates| az_security_KeyVaults__key_vault
+  az_compute_SAPHANAOnAzure__hana_db -->|SAP health metrics| az_monitor_AzureMonitorsForSAPSolutions__sap_monitor

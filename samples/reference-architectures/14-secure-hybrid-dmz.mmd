@@ -1,0 +1,26 @@
+%% m2d: strict = true %%
+%% m2d: title = Secure Hybrid Network DMZ %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/dmz/secure-vnet-dmz %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_network_ExpressrouteCircuits__expressroute["ExpressRoute circuit"]
+  az_networking_VirtualNetworks__dmz_vnet["DMZ virtual network"]
+  az_networking_Firewalls__dmz_firewall["Azure Firewall"]
+  az_network_ApplicationGateway__public_gateway["Application Gateway"]
+  az_network_LoadBalancers__internal_lb["Internal Load Balancer"]
+  az_compute_VMScaleSets__web_scale_set["Web tier VM scale set"]
+  az_compute_VMScaleSets__app_scale_set["Application tier VM scale set"]
+  az_databases_SQLDatabase__data_tier["Azure SQL Database"]
+  az_networking_Bastions__bastion["Azure Bastion"]
+  az_monitor_Monitor__monitor["Azure Monitor"]
+
+  az_network_ExpressrouteCircuits__expressroute -->|hybrid connectivity| az_networking_VirtualNetworks__dmz_vnet
+  az_networking_VirtualNetworks__dmz_vnet -->|central inspection| az_networking_Firewalls__dmz_firewall
+  az_networking_Firewalls__dmz_firewall -->|allowed inbound traffic| az_network_ApplicationGateway__public_gateway
+  az_network_ApplicationGateway__public_gateway -->|web routing| az_compute_VMScaleSets__web_scale_set
+  az_compute_VMScaleSets__web_scale_set -->|private tier traffic| az_network_LoadBalancers__internal_lb
+  az_network_LoadBalancers__internal_lb -->|balanced app calls| az_compute_VMScaleSets__app_scale_set
+  az_compute_VMScaleSets__app_scale_set -->|data access| az_databases_SQLDatabase__data_tier
+  az_networking_Bastions__bastion -->|admin access| az_compute_VMScaleSets__web_scale_set
+  az_networking_Bastions__bastion -->|admin access| az_compute_VMScaleSets__app_scale_set
+  az_networking_Firewalls__dmz_firewall -->|diagnostics| az_monitor_Monitor__monitor

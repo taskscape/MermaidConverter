@@ -1,0 +1,18 @@
+%% m2d: strict = true %%
+%% m2d: title = Resilient Event Hubs And Functions %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/serverless/event-hubs-functions/resilient-design %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_analytics_EventHubs__ingestion_hub["Event Hubs namespace"]
+  az_compute_FunctionApps__processor_function["Event Hubs triggered Function App"]
+  az_storage_StorageAccounts__checkpoint_storage["Checkpoint storage account"]
+  az_database_CosmosDb__operational_store["Azure Cosmos DB"]
+  az_integration_ServiceBus__dead_letter_bus["Service Bus dead-letter queue"]
+  az_monitor_ApplicationInsights__app_insights["Application Insights"]
+
+  az_analytics_EventHubs__ingestion_hub -->|partitioned event stream| az_compute_FunctionApps__processor_function
+  az_compute_FunctionApps__processor_function -->|checkpoint leases| az_storage_StorageAccounts__checkpoint_storage
+  az_compute_FunctionApps__processor_function -->|valid events| az_database_CosmosDb__operational_store
+  az_compute_FunctionApps__processor_function -->|poison messages| az_integration_ServiceBus__dead_letter_bus
+  az_compute_FunctionApps__processor_function -->|logs and traces| az_monitor_ApplicationInsights__app_insights
+  az_analytics_EventHubs__ingestion_hub -->|ingestion metrics| az_monitor_ApplicationInsights__app_insights

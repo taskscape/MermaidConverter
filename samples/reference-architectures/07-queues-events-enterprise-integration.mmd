@@ -1,0 +1,20 @@
+%% m2d: strict = true %%
+%% m2d: title = Message Broker And Events For Enterprise Integration %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/example-scenario/integration/queues-events %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_integration_ServiceBus__orders_queue["Service Bus queue"]
+  az_integration_EventGridTopics__message_topic["Event Grid topic"]
+  az_integration_EventGridSubscriptions__message_subscription["Event Grid subscription"]
+  az_integration_LogicApps__receiver_logic_app["Logic App receiver"]
+  az_compute_FunctionApps__transform_function["Function App transformer"]
+  az_databases_SQLDatabase__integration_db["Azure SQL Database"]
+  az_storage_StorageAccounts__archive_storage["Storage account archive"]
+
+  az_integration_ServiceBus__orders_queue -->|new message event| az_integration_EventGridTopics__message_topic
+  az_integration_EventGridTopics__message_topic -->|subscription notification| az_integration_EventGridSubscriptions__message_subscription
+  az_integration_EventGridSubscriptions__message_subscription -->|triggers pull model| az_integration_LogicApps__receiver_logic_app
+  az_integration_LogicApps__receiver_logic_app -->|drains queue| az_integration_ServiceBus__orders_queue
+  az_integration_LogicApps__receiver_logic_app -->|calls transformation| az_compute_FunctionApps__transform_function
+  az_compute_FunctionApps__transform_function -->|persists business data| az_databases_SQLDatabase__integration_db
+  az_compute_FunctionApps__transform_function -->|stores raw payload| az_storage_StorageAccounts__archive_storage

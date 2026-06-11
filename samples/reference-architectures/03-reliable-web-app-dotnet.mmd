@@ -1,0 +1,21 @@
+%% m2d: strict = true %%
+%% m2d: title = Reliable Web App Pattern For .NET %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/web-apps/guides/enterprise-app-patterns/reliable-web-app/dotnet/guidance %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_network_FrontDoors__front_door["Azure Front Door"]
+  az_identity_ManagedIdentities__managed_identity["Managed identity"]
+  az_appservices_AppServices__web_app["App Service web app"]
+  az_databases_CacheRedis__redis["Azure Managed Redis"]
+  az_databases_SQLDatabase__orders_db["Azure SQL Database"]
+  az_storage_StorageAccounts__blob_account["Storage account"]
+  az_security_KeyVaults__key_vault["Azure Key Vault"]
+  az_monitor_ApplicationInsights__app_insights["Application Insights"]
+
+  az_network_FrontDoors__front_door -->|global HTTPS ingress| az_appservices_AppServices__web_app
+  az_appservices_AppServices__web_app -->|uses identity| az_identity_ManagedIdentities__managed_identity
+  az_identity_ManagedIdentities__managed_identity -->|retrieves secrets| az_security_KeyVaults__key_vault
+  az_appservices_AppServices__web_app -->|session and cache data| az_databases_CacheRedis__redis
+  az_appservices_AppServices__web_app -->|transactional data| az_databases_SQLDatabase__orders_db
+  az_appservices_AppServices__web_app -->|files and diagnostics| az_storage_StorageAccounts__blob_account
+  az_appservices_AppServices__web_app -->|telemetry| az_monitor_ApplicationInsights__app_insights

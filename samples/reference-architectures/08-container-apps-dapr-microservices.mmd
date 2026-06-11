@@ -1,0 +1,28 @@
+%% m2d: strict = true %%
+%% m2d: title = Container Apps Microservices With Dapr %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/example-scenario/serverless/microservices-with-container-apps-dapr %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_compute_ContainerRegistries__acr["Azure Container Registry"]
+  az_compute_ContainerApps__gateway_api["Container App API gateway"]
+  az_compute_ContainerApps__orders_service["Container App orders service"]
+  az_compute_ContainerApps__inventory_service["Container App inventory service"]
+  az_integration_AzureServiceBus__pubsub["Service Bus pub-sub"]
+  az_databases_AzureCosmosDb__catalog_store["Azure Cosmos DB catalog"]
+  az_databases_SQLDatabase__orders_db["Azure SQL Database orders"]
+  az_databases_CacheRedis__redis["Azure Managed Redis"]
+  az_security_KeyVaults__key_vault["Key Vault"]
+  az_monitor_Monitor__monitor["Azure Monitor"]
+
+  az_compute_ContainerRegistries__acr -->|image pulls| az_compute_ContainerApps__gateway_api
+  az_compute_ContainerRegistries__acr -->|image pulls| az_compute_ContainerApps__orders_service
+  az_compute_ContainerRegistries__acr -->|image pulls| az_compute_ContainerApps__inventory_service
+  az_compute_ContainerApps__gateway_api -->|HTTP and Dapr service invocation| az_compute_ContainerApps__orders_service
+  az_compute_ContainerApps__gateway_api -->|HTTP and Dapr service invocation| az_compute_ContainerApps__inventory_service
+  az_compute_ContainerApps__orders_service -->|publish order events| az_integration_AzureServiceBus__pubsub
+  az_compute_ContainerApps__inventory_service -->|subscribe inventory events| az_integration_AzureServiceBus__pubsub
+  az_compute_ContainerApps__orders_service -->|transactional state| az_databases_SQLDatabase__orders_db
+  az_compute_ContainerApps__inventory_service -->|catalog state| az_databases_AzureCosmosDb__catalog_store
+  az_compute_ContainerApps__gateway_api -->|cache reads| az_databases_CacheRedis__redis
+  az_compute_ContainerApps__gateway_api -->|secrets| az_security_KeyVaults__key_vault
+  az_compute_ContainerApps__gateway_api -->|logs and metrics| az_monitor_Monitor__monitor

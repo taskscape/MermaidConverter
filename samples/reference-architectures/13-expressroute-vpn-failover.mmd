@@ -1,0 +1,24 @@
+%% m2d: strict = true %%
+%% m2d: title = ExpressRoute With VPN Failover %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/expressroute-vpn-failover %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_network_LocalNetworkGateways__branch_gateway["Local network gateway"]
+  az_network_ExpressrouteCircuits__expressroute["ExpressRoute circuit"]
+  az_network_VirtualNetworkGateways__er_gateway["ExpressRoute virtual network gateway"]
+  az_network_VirtualNetworkGateways__vpn_gateway["VPN virtual network gateway"]
+  az_networking_VirtualNetworks__azure_vnet["Azure virtual network"]
+  az_network_RouteTables__route_tables["Route tables"]
+  az_networking_Firewalls__azure_firewall["Azure Firewall"]
+  az_compute_VirtualMachine__workload_vm["Application virtual machine"]
+  az_monitor_NetworkWatcher__network_watcher["Network Watcher"]
+
+  az_network_LocalNetworkGateways__branch_gateway -->|primary private circuit| az_network_ExpressrouteCircuits__expressroute
+  az_network_ExpressrouteCircuits__expressroute -->|private peering| az_network_VirtualNetworkGateways__er_gateway
+  az_network_LocalNetworkGateways__branch_gateway -->|IPsec failover tunnel| az_network_VirtualNetworkGateways__vpn_gateway
+  az_network_VirtualNetworkGateways__er_gateway -->|preferred route| az_networking_VirtualNetworks__azure_vnet
+  az_network_VirtualNetworkGateways__vpn_gateway -->|backup route| az_networking_VirtualNetworks__azure_vnet
+  az_networking_VirtualNetworks__azure_vnet -->|routes through| az_network_RouteTables__route_tables
+  az_network_RouteTables__route_tables -->|inspection path| az_networking_Firewalls__azure_firewall
+  az_networking_Firewalls__azure_firewall -->|allows app traffic| az_compute_VirtualMachine__workload_vm
+  az_networking_VirtualNetworks__azure_vnet -->|connection diagnostics| az_monitor_NetworkWatcher__network_watcher

@@ -1,0 +1,24 @@
+%% m2d: strict = true %%
+%% m2d: title = Baseline Zone-Redundant App Service Web Application %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/web-apps/app-service/architectures/baseline-zone-redundant %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  subgraph az_region_primary["Region with zone-redundant web workload"]
+    az_networking_VirtualNetworks__web_vnet["Application virtual network"]
+    az_networking_WebApplicationFirewallPolicieswaf__waf_policy["WAF policy"]
+    az_network_ApplicationGateway__app_gateway["Application Gateway"]
+    az_appservices_AppServices__zone_web_app["Zone-redundant App Service"]
+    az_networking_PrivateLink__app_private_link["Private Link endpoint"]
+    az_databases_SQLDatabase__zone_sql_db["Zone-redundant SQL Database"]
+    az_security_KeyVaults__key_vault["Key Vault"]
+    az_monitor_ApplicationInsights__app_insights["Application Insights"]
+  end
+
+  az_networking_WebApplicationFirewallPolicieswaf__waf_policy -->|protects listener| az_network_ApplicationGateway__app_gateway
+  az_network_ApplicationGateway__app_gateway -->|private backend route| az_networking_PrivateLink__app_private_link
+  az_networking_PrivateLink__app_private_link -->|private endpoint| az_appservices_AppServices__zone_web_app
+  az_appservices_AppServices__zone_web_app -->|private data access| az_databases_SQLDatabase__zone_sql_db
+  az_appservices_AppServices__zone_web_app -->|secret retrieval| az_security_KeyVaults__key_vault
+  az_appservices_AppServices__zone_web_app -->|telemetry| az_monitor_ApplicationInsights__app_insights
+  az_networking_VirtualNetworks__web_vnet -->|contains subnets| az_network_ApplicationGateway__app_gateway
+  az_networking_VirtualNetworks__web_vnet -->|contains private endpoints| az_networking_PrivateLink__app_private_link

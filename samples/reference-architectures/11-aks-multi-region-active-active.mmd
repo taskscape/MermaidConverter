@@ -1,0 +1,36 @@
+%% m2d: strict = true %%
+%% m2d: title = AKS Multi-Region Active-Active %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks-multi-region/aks-multi-cluster %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_network_FrontDoors__front_door["Azure Front Door"]
+  az_network_TrafficManagerProfiles__traffic_manager["Traffic Manager profile"]
+  az_compute_ContainerRegistries__acr["Geo-replicated Container Registry"]
+  az_database_CosmosDb__global_cosmos["Multi-region Azure Cosmos DB"]
+  az_monitor_Monitor__global_monitor["Azure Monitor"]
+
+  subgraph az_region_east["Region east"]
+    az_network_ApplicationGateway__east_gateway["East Application Gateway"]
+    az_compute_KubernetesServices__east_aks["East AKS cluster"]
+    az_security_KeyVaults__east_key_vault["East Key Vault"]
+  end
+
+  subgraph az_region_west["Region west"]
+    az_network_ApplicationGateway__west_gateway["West Application Gateway"]
+    az_compute_KubernetesServices__west_aks["West AKS cluster"]
+    az_security_KeyVaults__west_key_vault["West Key Vault"]
+  end
+
+  az_network_FrontDoors__front_door -->|global HTTP routing| az_network_TrafficManagerProfiles__traffic_manager
+  az_network_TrafficManagerProfiles__traffic_manager -->|healthy endpoint| az_network_ApplicationGateway__east_gateway
+  az_network_TrafficManagerProfiles__traffic_manager -->|healthy endpoint| az_network_ApplicationGateway__west_gateway
+  az_network_ApplicationGateway__east_gateway -->|regional ingress| az_compute_KubernetesServices__east_aks
+  az_network_ApplicationGateway__west_gateway -->|regional ingress| az_compute_KubernetesServices__west_aks
+  az_compute_ContainerRegistries__acr -->|image pull| az_compute_KubernetesServices__east_aks
+  az_compute_ContainerRegistries__acr -->|image pull| az_compute_KubernetesServices__west_aks
+  az_compute_KubernetesServices__east_aks -->|reads and writes| az_database_CosmosDb__global_cosmos
+  az_compute_KubernetesServices__west_aks -->|reads and writes| az_database_CosmosDb__global_cosmos
+  az_compute_KubernetesServices__east_aks -->|secrets| az_security_KeyVaults__east_key_vault
+  az_compute_KubernetesServices__west_aks -->|secrets| az_security_KeyVaults__west_key_vault
+  az_compute_KubernetesServices__east_aks -->|health and metrics| az_monitor_Monitor__global_monitor
+  az_compute_KubernetesServices__west_aks -->|health and metrics| az_monitor_Monitor__global_monitor

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MermaidToDiagrams.Shared\MermaidToDiagrams.Shared.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <AssemblyName>MermaidToDiagrams.API</AssemblyName>
+    <RootNamespace>MermaidToDiagrams.API</RootNamespace>
+  </PropertyGroup>
+
+</Project>

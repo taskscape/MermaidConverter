@@ -1,0 +1,15 @@
+interface:
+  display_name: "Azure Mermaid Diagrams"
+  short_description: "Render Azure diagrams from Mermaid"
+  default_prompt: "Use $azure-mermaid-diagrams to create, validate, repair, or render an Azure architecture diagram from decorated Mermaid."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "MermaidToDiagrams.MCP"
+      description: "MCP server exposing MermaidToDiagrams validation and conversion tools."
+      transport: "streamable_http"
+      url: "http://127.0.0.1:5110/mcp"
+
+policy:
+  allow_implicit_invocation: true

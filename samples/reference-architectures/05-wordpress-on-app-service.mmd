@@ -1,0 +1,19 @@
+%% m2d: strict = true %%
+%% m2d: title = WordPress On App Service %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/example-scenario/infrastructure/wordpress-app-service %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_web_FrontDoorAndCDNProfiles__frontdoor_cdn["Front Door and CDN profile"]
+  az_networking_VirtualNetworks__wordpress_vnet["WordPress virtual network"]
+  az_appservices_AppServices__wordpress_app["App Service WordPress"]
+  az_databases_AzureDatabaseMysqlServer__mysql["Azure Database for MySQL"]
+  az_storage_StorageAccounts__media_storage["Storage account for media"]
+  az_networking_PrivateLink__private_endpoints["Private Link endpoints"]
+  az_monitor_ApplicationInsights__app_insights["Application Insights"]
+
+  az_web_FrontDoorAndCDNProfiles__frontdoor_cdn -->|global delivery and cache| az_appservices_AppServices__wordpress_app
+  az_networking_VirtualNetworks__wordpress_vnet -->|network integration| az_appservices_AppServices__wordpress_app
+  az_appservices_AppServices__wordpress_app -->|private database traffic| az_networking_PrivateLink__private_endpoints
+  az_networking_PrivateLink__private_endpoints -->|database endpoint| az_databases_AzureDatabaseMysqlServer__mysql
+  az_appservices_AppServices__wordpress_app -->|uploads and media| az_storage_StorageAccounts__media_storage
+  az_appservices_AppServices__wordpress_app -->|telemetry| az_monitor_ApplicationInsights__app_insights

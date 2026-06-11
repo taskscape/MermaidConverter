@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MermaidToDiagrams.API/MermaidToDiagrams.API.csproj" />
+    <Project Path="src/MermaidToDiagrams.CLI/MermaidToDiagrams.CLI.csproj" />
+    <Project Path="src/MermaidToDiagrams.GUI/MermaidToDiagrams.GUI.csproj" />
+    <Project Path="src/MermaidToDiagrams.MCP/MermaidToDiagrams.MCP.csproj" />
+    <Project Path="src/MermaidToDiagrams.Shared/MermaidToDiagrams.Shared.csproj" />
+  </Folder>
+</Solution>

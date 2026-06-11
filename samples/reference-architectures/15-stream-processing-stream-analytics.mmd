@@ -1,0 +1,21 @@
+%% m2d: strict = true %%
+%% m2d: title = Stream Processing With Azure Stream Analytics %%
+%% m2d: source = https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/data/stream-processing-stream-analytics %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_analytics_EventHubs__source_stream_a["Event Hubs source A"]
+  az_analytics_EventHubs__source_stream_b["Event Hubs source B"]
+  az_analytics_StreamAnalyticsJobs__stream_job["Stream Analytics job"]
+  az_storage_BlobStorage__raw_capture["Blob Storage raw capture"]
+  az_database_CosmosDb__hot_store["Azure Cosmos DB hot store"]
+  az_databases_SQLDatabase__serving_db["Azure SQL serving database"]
+  az_analytics_PowerBiEmbedded__power_bi["Power BI dashboard"]
+  az_monitor_Monitor__monitor["Azure Monitor"]
+
+  az_analytics_EventHubs__source_stream_a -->|telemetry events| az_analytics_StreamAnalyticsJobs__stream_job
+  az_analytics_EventHubs__source_stream_b -->|reference events| az_analytics_StreamAnalyticsJobs__stream_job
+  az_analytics_EventHubs__source_stream_a -->|capture archive| az_storage_BlobStorage__raw_capture
+  az_analytics_StreamAnalyticsJobs__stream_job -->|windowed aggregates| az_database_CosmosDb__hot_store
+  az_analytics_StreamAnalyticsJobs__stream_job -->|structured results| az_databases_SQLDatabase__serving_db
+  az_databases_SQLDatabase__serving_db -->|reports| az_analytics_PowerBiEmbedded__power_bi
+  az_analytics_StreamAnalyticsJobs__stream_job -->|job metrics| az_monitor_Monitor__monitor
