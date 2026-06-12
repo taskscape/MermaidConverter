@@ -17,4 +17,10 @@
     <SelfContained>true</SelfContained>
   </PropertyGroup>
 
+  <Target Name="BuildCliForGuiDevelopment" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="..\MermaidToDiagrams.CLI\MermaidToDiagrams.CLI.csproj"
+             Targets="Build"
+             Properties="Configuration=$(Configuration)" />
+  </Target>
+
 </Project>

@@ -25,6 +25,7 @@ internal static class CliApplication
                 "emit-python" => await EmitPythonAsync(rest),
                 "list-icons" => ListIcons(rest),
                 "inspect-icons" => InspectIcons(rest),
+                "ensure-dependencies" => await EnsureDependenciesAsync(rest),
                 "doctor" => await DoctorAsync(rest),
                 "--version" or "version" => PrintVersion(),
                 _ => Fail($"Unknown command '{args[0]}'. Run 'm2d --help'.")
@@ -184,6 +185,25 @@ internal static class CliApplication
         return 0;
     }
 
+    private static async Task<int> EnsureDependenciesAsync(string[] args)
+    {
+        var installMissing = args.Contains("--install");
+        var quiet = args.Contains("--quiet");
+        var manager = new PythonDependencyManager(RuntimeLocator.FromAppContext());
+        var result = await manager.EnsureAsync(installMissing);
+
+        if (!quiet)
+        {
+            foreach (var message in result.Messages)
+            {
+                var stream = result.Success ? Console.Out : Console.Error;
+                stream.WriteLine(message);
+            }
+        }
+
+        return result.Success ? 0 : 3;
+    }
+
     private static async Task<ConversionResult> ConvertAsync(string input, string output, string format, string theme, bool strict)
     {
         if (!File.Exists(input))
@@ -218,6 +238,7 @@ internal static class CliApplication
           m2d validate <input.mmd>
           m2d emit-python <input.mmd> --output <script.py> [--format png] [--theme azure-modern]
           m2d render <input.mmd> --output <output-base> [--format png|svg|pdf] [--emit-python]
+          m2d ensure-dependencies [--install]
           m2d list-icons [--category compute]
           m2d inspect-icons --query aks
           m2d doctor

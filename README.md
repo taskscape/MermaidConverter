@@ -85,10 +85,11 @@ The GUI lets you:
 - Review local syntax/convention issues as a list.
 - Run CLI validation and inspect captured CLI output.
 - Confirm conversion before the CLI `render` command starts.
+- Check Python rendering dependencies and try to install missing Python packages before conversion.
 - Surface CLI conversion errors back into the GUI output panel.
 - Start over with another file, the same file, or new pasted text.
 
-The GUI performs a local eligibility check first. It verifies that the source is not empty, contains a supported `flowchart` or `graph` declaration, includes the required `m2d` strict/convention decorators, uses deterministic Azure node IDs, and avoids unsupported reverse/bidirectional arrows. If local checks pass, it calls `m2d validate`. If validation succeeds, the conversion button is enabled.
+The GUI performs a local eligibility check first. It verifies that the source is not empty, contains a supported `flowchart` or `graph` declaration, includes the required `m2d` strict/convention decorators, uses deterministic Azure node IDs, and avoids unsupported reverse/bidirectional arrows. If local checks pass, it calls `m2d validate`. If validation succeeds, the conversion button is enabled. When conversion starts, the GUI calls `m2d ensure-dependencies --install` before `m2d render`; this runs Python to import `diagrams` and `graphviz`, checks for Graphviz `dot`, and attempts to install missing Python packages with pip.
 
 ### REST API
 
@@ -247,6 +248,12 @@ Check runtime state:
 dotnet run --project .\src\MermaidToDiagrams.CLI -- doctor
 ```
 
+Check rendering dependencies and try to install missing Python packages:
+
+```powershell
+dotnet run --project .\src\MermaidToDiagrams.CLI -- ensure-dependencies --install
+```
+
 ## Compatible Mermaid Authoring Rules
 
 Use Mermaid `flowchart` or `graph` syntax with one of these directions:
@@ -304,6 +311,73 @@ Recommended metadata:
 
 ## Installer Packaging
 
+### Creating `artifacts\runtime` locally
+
+The CLI renderer looks for a private runtime in this layout:
+
+```text
+artifacts/runtime/
+  python/
+    python.exe
+    Lib/site-packages/
+      diagrams/
+      graphviz/
+  graphviz/
+    bin/dot.exe
+```
+
+The easiest way to create it is to run the staging script:
+
+```powershell
+.\tools\build-python-runtime.ps1 -GraphvizBinDir "C:\Program Files\Graphviz"
+```
+
+What the script does:
+
+1. Downloads the Python embeddable package into `artifacts/cache`.
+2. Extracts it to `artifacts/runtime/python`.
+3. Enables `import site` in the embeddable runtime `python*._pth` file.
+4. Bootstraps `pip` with `get-pip.py`.
+5. Installs Python packages into `artifacts/runtime/python/Lib/site-packages`.
+6. Copies native Graphviz files into `artifacts/runtime/graphviz` when `-GraphvizBinDir` is supplied.
+
+The exact `diagrams` install command used by the script is:
+
+```powershell
+.\artifacts\runtime\python\python.exe -m pip install --no-cache-dir --target .\artifacts\runtime\python\Lib\site-packages "diagrams==0.24.4" "graphviz==0.20.3"
+```
+
+The `diagrams` package is the Python module that provides `from diagrams import Diagram`, Azure node classes, and Python-side rendering helpers. The `graphviz` package installed by `pip` is only the Python wrapper. It does not include native Graphviz binaries; `dot.exe` must also be installed or copied separately.
+
+If Graphviz is already installed locally, verify the root folder contains `bin\dot.exe`, then pass that root folder to the script:
+
+```powershell
+Test-Path "C:\Program Files\Graphviz\bin\dot.exe"
+.\tools\build-python-runtime.ps1 -GraphvizBinDir "C:\Program Files\Graphviz"
+```
+
+If Graphviz is installed somewhere else, use that directory instead. The value passed to `-GraphvizBinDir` must be the Graphviz root directory, not the `bin` directory.
+
+Verify the Python packages:
+
+```powershell
+.\artifacts\runtime\python\python.exe -c "import diagrams, graphviz; print(diagrams.__file__); print(graphviz.__version__)"
+```
+
+Verify native Graphviz:
+
+```powershell
+.\artifacts\runtime\graphviz\bin\dot.exe -V
+```
+
+Then verify the CLI can see the runtime after publishing:
+
+```powershell
+dotnet publish .\src\MermaidToDiagrams.CLI\MermaidToDiagrams.CLI.csproj -c Release -f net10.0 -r win-x64 --self-contained true -p:PublishSingleFile=true -o .\artifacts\publish\win-x64
+Copy-Item .\artifacts\runtime .\artifacts\publish\win-x64\runtime -Recurse -Force
+.\artifacts\publish\win-x64\m2d.exe doctor
+```
+
 Stage Python and Python package dependencies:
 
 ```powershell
@@ -313,7 +387,7 @@ Stage Python and Python package dependencies:
 That script stages:
 
 - Python embeddable runtime
-- `diagrams`
+- `diagrams` Python package
 - Python `graphviz` package
 - native Graphviz files when `-GraphvizBinDir` is supplied
 
@@ -334,7 +408,7 @@ The installer copies the compiled CLI, private Python runtime, Graphviz runtime,
 - Mermaid styling, `classDef`, custom shapes, Markdown labels, HTML labels, links, and advanced layout directives are not rendered.
 - Clusters are supported, but nested cluster layout is ultimately controlled by Graphviz.
 - Rendering quality depends on Python Diagrams and Graphviz layout behavior.
-- The CLI does not install Python dependencies at runtime. The installer must be built from a staged private runtime, or development machines must provide compatible Python and Graphviz tools on `PATH`.
+- The GUI asks the CLI to install missing Python packages before conversion, but native Graphviz `dot.exe` still must come from the bundled runtime or a Graphviz installation on `PATH`.
 
 ## Reference Fixtures
 

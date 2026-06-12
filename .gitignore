@@ -1,8 +1,11 @@
 bin/
 obj/
-artifacts/
 TestResults/
 .vs/
 .vscode/
 *.user
 *.suo
+artifacts/tmp-gui-publish
+*.log
+artifacts/cache
+samples/reference-architectures/*.png

@@ -342,6 +342,21 @@ public sealed partial class MainForm : Form
 
         try
         {
+            _statusLabel.Text = "Checking Python dependencies...";
+            AddIssue("Checking Python dependencies before conversion.");
+            var dependencyResult = await _cliRunner.RunAsync(["ensure-dependencies", "--install"]);
+            AppendCliResult(dependencyResult);
+
+            if (dependencyResult.ExitCode != 0)
+            {
+                AddIssue($"Error: Dependency check/install failed with exit code {dependencyResult.ExitCode}.");
+                _statusLabel.Text = "Dependency check failed.";
+                return;
+            }
+
+            AddIssue("Python and rendering dependencies are ready.");
+            _statusLabel.Text = "Conversion running...";
+
             var args = new[]
             {
                 "render",

@@ -51,11 +51,11 @@ public sealed class CliRunner
             envPath,
             Path.Combine(baseDir, "m2d.exe"),
             Path.Combine(baseDir, "cli", "m2d.exe"),
-            repoRoot is null ? null : Path.Combine(repoRoot, "artifacts", "publish", "win-x64", "m2d.exe"),
             repoRoot is null ? null : Path.Combine(repoRoot, "src", "MermaidToDiagrams.CLI", "bin", "Debug", "net10.0", "win-x64", "m2d.exe"),
             repoRoot is null ? null : Path.Combine(repoRoot, "src", "MermaidToDiagrams.CLI", "bin", "Release", "net10.0", "win-x64", "m2d.exe"),
             Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "MermaidToDiagrams.CLI", "bin", "Debug", "net10.0", "win-x64", "m2d.exe")),
-            Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "MermaidToDiagrams.CLI", "bin", "Release", "net10.0", "win-x64", "m2d.exe"))
+            Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "MermaidToDiagrams.CLI", "bin", "Release", "net10.0", "win-x64", "m2d.exe")),
+            repoRoot is null ? null : Path.Combine(repoRoot, "artifacts", "publish", "win-x64", "m2d.exe")
         };
 
         var found = candidates.Where(p => !string.IsNullOrWhiteSpace(p)).FirstOrDefault(File.Exists);
