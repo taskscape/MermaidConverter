@@ -64,5 +64,14 @@
   { "category": "storage", "className": "BlobStorage", "importPath": "diagrams.azure.storage.BlobStorage", "aliases": ["blob storage", "blob"] },
   { "category": "storage", "className": "DataLakeStorage", "importPath": "diagrams.azure.storage.DataLakeStorage", "aliases": ["data lake storage", "adls"] },
   { "category": "storage", "className": "StorageAccounts", "importPath": "diagrams.azure.storage.StorageAccounts", "aliases": ["storage account", "storage"] },
-  { "category": "web", "className": "FrontDoorAndCDNProfiles", "importPath": "diagrams.azure.web.FrontDoorAndCDNProfiles", "aliases": ["front door and cdn"] }
+  { "category": "web", "className": "FrontDoorAndCDNProfiles", "importPath": "diagrams.azure.web.FrontDoorAndCDNProfiles", "aliases": ["front door and cdn"] },
+  { "category": "analytics", "className": "LogAnalyticsWorkspaces", "importPath": "diagrams.azure.analytics.LogAnalyticsWorkspaces", "aliases": ["log analytics", "log analytics workspace"] },
+  { "category": "database", "className": "CacheForRedis", "importPath": "diagrams.azure.database.CacheForRedis", "aliases": ["azure cache for redis", "cache for redis", "azure managed redis"] },
+  { "category": "database", "className": "DatabaseForPostgresqlServers", "importPath": "diagrams.azure.database.DatabaseForPostgresqlServers", "aliases": ["postgresql", "postgres", "postgresql flexible server", "azure database for postgresql"] },
+  { "category": "devops", "className": "ApplicationInsights", "importPath": "diagrams.azure.devops.ApplicationInsights", "aliases": ["application insights", "app insights"] },
+  { "category": "general", "className": "Resource", "importPath": "diagrams.azure.general.Resource", "aliases": ["generic resource", "external service"] },
+  { "category": "general", "className": "Usericon", "importPath": "diagrams.azure.general.Usericon", "aliases": ["users", "consumers", "client", "end users"] },
+  { "category": "integration", "className": "APIManagement", "importPath": "diagrams.azure.integration.APIManagement", "aliases": ["api management", "apim"] },
+  { "category": "network", "className": "PrivateEndpoint", "importPath": "diagrams.azure.network.PrivateEndpoint", "aliases": ["private endpoint", "pe"] },
+  { "category": "web", "className": "AppServices", "importPath": "diagrams.azure.web.AppServices", "aliases": ["app service api", "web app service"] }
 ]
