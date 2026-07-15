@@ -69,6 +69,7 @@
   { "category": "database", "className": "CacheForRedis", "importPath": "diagrams.azure.database.CacheForRedis", "aliases": ["azure cache for redis", "cache for redis", "azure managed redis"] },
   { "category": "database", "className": "DatabaseForPostgresqlServers", "importPath": "diagrams.azure.database.DatabaseForPostgresqlServers", "aliases": ["postgresql", "postgres", "postgresql flexible server", "azure database for postgresql"] },
   { "category": "devops", "className": "ApplicationInsights", "importPath": "diagrams.azure.devops.ApplicationInsights", "aliases": ["application insights", "app insights"] },
+  { "category": "general", "className": "Developertools", "importPath": "diagrams.azure.general.Developertools", "aliases": ["developer tools", "code", "plug-in", "plugin"] },
   { "category": "general", "className": "Resource", "importPath": "diagrams.azure.general.Resource", "aliases": ["generic resource", "external service"] },
   { "category": "general", "className": "Usericon", "importPath": "diagrams.azure.general.Usericon", "aliases": ["users", "consumers", "client", "end users"] },
   { "category": "integration", "className": "APIManagement", "importPath": "diagrams.azure.integration.APIManagement", "aliases": ["api management", "apim"] },

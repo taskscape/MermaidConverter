@@ -9,3 +9,5 @@ artifacts/tmp-gui-publish
 *.log
 artifacts/cache
 samples/reference-architectures/*.png
+artifacts/runtime/python
+out
