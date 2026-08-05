@@ -1,0 +1,20 @@
+%% m2d: strict = true %%
+%% m2d: title = Entitlement Revocation - Payment Failure Flow %%
+%% m2d: source = internal architecture (translated from sequence diagram) %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_general_Resource__stripe["Stripe"]
+  az_compute_FunctionApps__payment_service["Payment Service"]
+  az_general_Resource__dataverse["Dataverse"]
+  az_integration_ServiceBus__service_bus["Service Bus"]
+  az_compute_FunctionApps__evaluation_service["Evaluation Service"]
+  az_database_DatabaseForPostgresqlServers__pg["PostgreSQL"]
+  az_database_CacheForRedis__cache["Redis and FusionCache"]
+
+  az_general_Resource__stripe -->|1. invoice.payment_failed after retries or subscription.deleted| az_compute_FunctionApps__payment_service
+  az_compute_FunctionApps__payment_service -->|2. update Payment Schedule to ended| az_general_Resource__dataverse
+  az_general_Resource__dataverse -->|3. change event via service endpoint| az_integration_ServiceBus__service_bus
+  az_integration_ServiceBus__service_bus -->|4. deliver| az_compute_FunctionApps__evaluation_service
+  az_compute_FunctionApps__evaluation_service -->|5. re-evaluate, no valid payment schedule| az_compute_FunctionApps__evaluation_service
+  az_compute_FunctionApps__evaluation_service -->|6. deactivate entitlements, absence means no access| az_database_DatabaseForPostgresqlServers__pg
+  az_compute_FunctionApps__evaluation_service -->|7. invalidate| az_database_CacheForRedis__cache

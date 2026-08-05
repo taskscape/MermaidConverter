@@ -1,0 +1,21 @@
+---
+config:
+  theme: redux
+---
+sequenceDiagram
+  participant App as Mobile / DXP / WordPress
+  participant APIM
+  participant API as Entitlements GET API
+  participant Cache
+  participant PG as PostgreSQL
+  App->>APIM: GET entitlements for contactId, with JWT
+  APIM->>API: forward with subscription key and policy
+  API->>Cache: lookup
+  alt cache hit
+    Cache-->>API: entitlements
+  else cache miss
+    API->>PG: query resolved entitlements
+    PG-->>API: rows
+    API->>Cache: populate with TTL
+  end
+  API-->>App: entitlement set in MembershipAccessControlItem shape

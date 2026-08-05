@@ -1,0 +1,12 @@
+---
+config:
+  theme: redux
+---
+flowchart TB
+  ROOT["Terraform root - per environment"]
+  LZ["landing-zone module<br/>subscription, policy, RBAC, Log Analytics<br/>shared, existing"]
+  CONN["connectivity module<br/>hub VNet, Front Door, App Gateway, DNS, peering<br/>shared, existing"]
+  APPMOD["application module - entitlement-engine<br/>this project: spoke subnets, apps, data, PaaS, private endpoints"]
+  ROOT --> LZ
+  ROOT --> CONN
+  ROOT --> APPMOD

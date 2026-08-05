@@ -1,0 +1,92 @@
+%% m2d: strict = true %%
+%% m2d: title = Entitlements Platform - Magnavox (UK South) %%
+%% m2d: source = internal architecture %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart TB
+  subgraph Internet
+    az_general_Usericon__consumers["Consumers\nMobile App, DXP Web,\nWordPress iGB Exec"]
+    az_general_Resource__stripe["Stripe\npayment provider"]
+  end
+
+  subgraph SaaS["Microsoft SaaS - UK South"]
+    az_general_Resource__dataverse["Dynamics 365 Dataverse - inputs and Phase 1 record"]
+  end
+
+  subgraph Sub["Azure Subscription - Magnavox env - UK South"]
+
+    subgraph Hub["Hub VNet - shared connectivity"]
+      az_network_FrontDoors__afd["Azure Front Door - WAF in prod"]
+      az_network_ApplicationGateway__agw["Application Gateway"]
+    end
+
+    subgraph Spoke["Spoke VNet - vnet-spoke-env-uks-001"]
+      subgraph SnApim["snet-apim - internal"]
+        az_integration_APIManagement__apim["API Management - shared"]
+      end
+      subgraph SnApps["snet-apps - VNet integrated"]
+        az_web_AppServices__entitlements_api["Entitlements GET API"]
+        az_compute_ContainerApps__evaluation_service["Evaluation Service"]
+        az_compute_FunctionApps__ingestion["Projection Ingestion Function"]
+      end
+      subgraph SnData["snet-data - delegated to PostgreSQL"]
+        az_database_DatabaseForPostgresqlServers__pg["PostgreSQL Flexible Server"]
+      end
+      subgraph SnPe["snet-pe - private endpoints"]
+        az_network_PrivateEndpoint__pe_kv["PE Key Vault"]
+        az_network_PrivateEndpoint__pe_redis["PE Redis"]
+        az_network_PrivateEndpoint__pe_sb["PE Service Bus"]
+      end
+    end
+
+    subgraph PaaS["Platform services - private access only"]
+      az_security_KeyVaults__kv["Key Vault"]
+      az_database_CacheForRedis__redis["Redis Cache - shared"]
+      az_integration_ServiceBus__sb["Service Bus"]
+    end
+
+    subgraph Obs["Observability"]
+      az_devops_ApplicationInsights__appinsights["Application Insights"]
+      az_analytics_LogAnalyticsWorkspaces__law["Log Analytics Workspace - shared"]
+    end
+
+    subgraph Existing["Existing estate"]
+      az_compute_FunctionApps__payment["Payment Service Function"]
+      az_storage_DataLakeStorage__adls["Data Lake ADLS Gen2"]
+    end
+  end
+
+  %% North-south read path
+  az_general_Usericon__consumers --> az_network_FrontDoors__afd
+  az_network_FrontDoors__afd --> az_network_ApplicationGateway__agw
+  az_network_ApplicationGateway__agw --> az_integration_APIManagement__apim
+  az_integration_APIManagement__apim --> az_web_AppServices__entitlements_api
+  az_web_AppServices__entitlements_api --> az_network_PrivateEndpoint__pe_redis
+  az_network_PrivateEndpoint__pe_redis --> az_database_CacheForRedis__redis
+  az_web_AppServices__entitlements_api --> az_database_DatabaseForPostgresqlServers__pg
+
+  %% Write and evaluation path
+  az_general_Resource__stripe --> az_compute_FunctionApps__payment
+  az_compute_FunctionApps__payment --> az_general_Resource__dataverse
+  az_general_Resource__dataverse -->|service endpoint| az_integration_ServiceBus__sb
+  az_integration_ServiceBus__sb --> az_network_PrivateEndpoint__pe_sb
+  az_network_PrivateEndpoint__pe_sb --> az_compute_FunctionApps__ingestion
+  az_compute_FunctionApps__ingestion --> az_compute_ContainerApps__evaluation_service
+  az_compute_ContainerApps__evaluation_service -->|read inputs via ACL, Managed Identity| az_general_Resource__dataverse
+  az_compute_ContainerApps__evaluation_service --> az_database_DatabaseForPostgresqlServers__pg
+  az_compute_FunctionApps__ingestion --> az_database_DatabaseForPostgresqlServers__pg
+  az_compute_FunctionApps__ingestion --> az_network_PrivateEndpoint__pe_redis
+
+  %% Reconciliation
+  az_general_Resource__dataverse -.->|Synapse Link| az_storage_DataLakeStorage__adls
+  az_storage_DataLakeStorage__adls -.->|reconcile and backfill| az_compute_FunctionApps__ingestion
+
+  %% Cross-cutting: secrets and telemetry
+  az_web_AppServices__entitlements_api -.-> az_network_PrivateEndpoint__pe_kv
+  az_compute_ContainerApps__evaluation_service -.-> az_network_PrivateEndpoint__pe_kv
+  az_compute_FunctionApps__ingestion -.-> az_network_PrivateEndpoint__pe_kv
+  az_network_PrivateEndpoint__pe_kv --> az_security_KeyVaults__kv
+  az_web_AppServices__entitlements_api -.-> az_devops_ApplicationInsights__appinsights
+  az_compute_ContainerApps__evaluation_service -.-> az_devops_ApplicationInsights__appinsights
+  az_compute_FunctionApps__ingestion -.-> az_devops_ApplicationInsights__appinsights
+  az_integration_APIManagement__apim -.-> az_devops_ApplicationInsights__appinsights
+  az_devops_ApplicationInsights__appinsights -.-> az_analytics_LogAnalyticsWorkspaces__law

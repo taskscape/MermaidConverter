@@ -1,0 +1,5 @@
+flowchart LR
+  P1["Phase 1<br/>Read API + projection<br/>D365 master, mgmt in D365"]
+  P2["Phase 2<br/>External evaluation + mgmt<br/>data still in Dataverse<br/>plug-in retired"]
+  P3["Phase 3<br/>PostgreSQL = record for<br/>resolved entitlements<br/>Dataverse tables decommissioned"]
+  P1 --> P2 --> P3

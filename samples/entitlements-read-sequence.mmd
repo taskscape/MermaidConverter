@@ -1,0 +1,19 @@
+%% m2d: strict = true %%
+%% m2d: title = Entitlements Read Path - Cache-Aside (GET API) %%
+%% m2d: source = internal architecture (translated from sequence diagram) %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_general_Usericon__client_apps["Mobile / DXP / WordPress"]
+  az_integration_APIManagement__apim["APIM"]
+  az_web_AppServices__entitlements_api["Entitlements GET API"]
+  az_database_CacheForRedis__cache["Cache"]
+  az_database_DatabaseForPostgresqlServers__pg["PostgreSQL"]
+
+  az_general_Usericon__client_apps -->|1. GET entitlements for contactId, with JWT| az_integration_APIManagement__apim
+  az_integration_APIManagement__apim -->|2. forward with subscription key and policy| az_web_AppServices__entitlements_api
+  az_web_AppServices__entitlements_api -->|3. lookup| az_database_CacheForRedis__cache
+  az_database_CacheForRedis__cache -.->|4. cache hit - return entitlements| az_web_AppServices__entitlements_api
+  az_web_AppServices__entitlements_api -->|5. cache miss - query resolved entitlements| az_database_DatabaseForPostgresqlServers__pg
+  az_database_DatabaseForPostgresqlServers__pg -.->|6. cache miss - rows| az_web_AppServices__entitlements_api
+  az_web_AppServices__entitlements_api -->|7. cache miss - populate with TTL| az_database_CacheForRedis__cache
+  az_web_AppServices__entitlements_api -.->|8. entitlement set in MembershipAccessControlItem shape| az_general_Usericon__client_apps

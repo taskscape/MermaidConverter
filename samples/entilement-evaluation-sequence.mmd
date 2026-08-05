@@ -1,0 +1,21 @@
+---
+config:
+  theme: redux
+---
+sequenceDiagram
+  participant Stripe
+  participant PaySvc as Payment Service
+  participant DV as Dataverse
+  participant SB as Service Bus
+  participant Eng as Evaluation Service
+  participant PG as PostgreSQL
+  participant Cache as Redis and FusionCache
+  Stripe->>PaySvc: invoice.paid or subscription.updated
+  PaySvc->>DV: write Order and Payment Schedule
+  DV->>SB: change event via service endpoint, for contactId and sector
+  SB->>Eng: deliver
+  Eng->>DV: read Order, Product Entitlements, Verification, Payment Schedule via ACL
+  Eng->>Eng: validate and resolve, positive-only, failures resolved pre-write
+  Eng->>DV: upsert resolved entitlements, Phase 2 record
+  Eng->>PG: upsert projection, Phase 3 record
+  Eng->>Cache: invalidate keys for contact

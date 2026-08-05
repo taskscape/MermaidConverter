@@ -1,0 +1,56 @@
+%% m2d: strict = true %%
+%% m2d: title = Entitlement Engine - Target Architecture (Azure + Dataverse) %%
+%% m2d: source = internal architecture %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart TB
+  subgraph Upstream["Input domains - mastered in Dataverse"]
+    az_compute_FunctionApps__payment_service["Payment Service\nStripe to Dataverse"]
+    az_general_Resource__external_feeds["LiveBuzz, Veriff,\nSalesforce feeds"]
+  end
+
+  subgraph DVBox["Dynamics 365 Dataverse"]
+    az_general_Resource__dataverse["Dataverse"]
+    az_general_Resource__service_endpoint["Service endpoint on\nentitlement-relevant tables"]
+  end
+
+  az_integration_ServiceBus__entitlement_events["Azure Service Bus\nentitlement events"]
+
+  subgraph Engine["Entitlement Engine - Azure Functions, VNet integrated"]
+    az_compute_FunctionApps__evaluation_service["Evaluation Service\nre-implements plug-in rules"]
+    az_general_Developertools__anti_corruption_layer["Anti-Corruption Layer\nDataverse SDK"]
+    az_web_AppServices__management_api["Management API and UI\nPhase 2 plus"]
+  end
+
+  subgraph Store["Read and record store"]
+    az_database_DatabaseForPostgresqlServers__pg["PostgreSQL\nFlexible Server"]
+    az_database_CacheForRedis__cache["Redis and FusionCache"]
+  end
+
+  subgraph Edge["Consumption"]
+    az_integration_APIManagement__apim["APIM"]
+    az_web_AppServices__entitlements_api["Entitlements GET API"]
+  end
+
+  az_general_Usericon__consumers["Mobile App, DXP,\nWordPress iGB Exec"]
+
+  %% Ingestion into Dataverse
+  az_compute_FunctionApps__payment_service --> az_general_Resource__dataverse
+  az_general_Resource__external_feeds --> az_general_Resource__dataverse
+
+  %% Event-driven evaluation
+  az_general_Resource__dataverse --> az_general_Resource__service_endpoint
+  az_general_Resource__service_endpoint --> az_integration_ServiceBus__entitlement_events
+  az_integration_ServiceBus__entitlement_events --> az_compute_FunctionApps__evaluation_service
+  az_compute_FunctionApps__evaluation_service --> az_general_Developertools__anti_corruption_layer
+  az_general_Developertools__anti_corruption_layer -.->|reads| az_general_Resource__dataverse
+  az_compute_FunctionApps__evaluation_service --> az_database_DatabaseForPostgresqlServers__pg
+  az_compute_FunctionApps__evaluation_service --> az_database_CacheForRedis__cache
+
+  %% Consumption read path
+  az_integration_APIManagement__apim --> az_web_AppServices__entitlements_api
+  az_web_AppServices__entitlements_api --> az_database_DatabaseForPostgresqlServers__pg
+  az_web_AppServices__entitlements_api --> az_database_CacheForRedis__cache
+  az_general_Usericon__consumers --> az_integration_APIManagement__apim
+
+  %% Phase 1/2 parity
+  az_compute_FunctionApps__evaluation_service -.->|parity dual-write Phase 1 and 2| az_general_Resource__dataverse

@@ -1,0 +1,19 @@
+---
+config:
+  theme: redux
+---
+sequenceDiagram
+  participant Stripe
+  participant PaySvc as Payment Service
+  participant DV as Dataverse
+  participant SB as Service Bus
+  participant Eng as Evaluation Service
+  participant PG as PostgreSQL
+  participant Cache as Redis and FusionCache
+  Stripe->>PaySvc: invoice.payment_failed after retries or subscription.deleted
+  PaySvc->>DV: update Payment Schedule to ended
+  DV->>SB: change event via service endpoint
+  SB->>Eng: deliver
+  Eng->>Eng: re-evaluate, no valid payment schedule
+  Eng->>PG: deactivate entitlements, absence means no access
+  Eng->>Cache: invalidate

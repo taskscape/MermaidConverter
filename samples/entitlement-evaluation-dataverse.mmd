@@ -1,0 +1,29 @@
+%% m2d: strict = true %%
+%% m2d: title = Entitlement Evaluation - Dynamics 365 / Dataverse (UK South) %%
+%% m2d: source = internal architecture %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_general_Resource__sales_order_trigger["Sales Order /\nPayment Schedule /\nVerification change"]
+  az_general_Usericon__user_apps["User-facing apps"]
+
+  subgraph D365["Dynamics 365 and Dataverse - UK South"]
+    az_general_Resource__evaluation_queue["dw_entitlementevaluationqueue"]
+    az_general_Developertools__evaluation_plugin["C# Evaluation Plug-in"]
+    az_general_Resource__master_entitlement["Master Entitlement"]
+    az_general_Resource__product_entitlement["Product Entitlement"]
+    az_general_Resource__contact_account_entitlement["Contact / Account Entitlement"]
+  end
+
+  %% Trigger and queue-driven evaluation
+  az_general_Resource__sales_order_trigger --> az_general_Resource__evaluation_queue
+  az_general_Resource__evaluation_queue --> az_general_Developertools__evaluation_plugin
+
+  %% Entitlement model feeding the plug-in
+  az_general_Resource__master_entitlement --> az_general_Resource__product_entitlement
+  az_general_Resource__product_entitlement --> az_general_Developertools__evaluation_plugin
+
+  %% Plug-in output
+  az_general_Developertools__evaluation_plugin --> az_general_Resource__contact_account_entitlement
+
+  %% Direct consumer read path
+  az_general_Usericon__user_apps -->|direct Dataverse query| az_general_Resource__contact_account_entitlement

@@ -1,0 +1,13 @@
+%% m2d: strict = true %%
+%% m2d: title = Terraform Module Layout - Entitlement Engine %%
+%% m2d: source = internal architecture %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_general_Developertools__tf_root["Terraform root - per environment"]
+  az_general_Resource__landing_zone["landing-zone module\nsubscription, policy, RBAC, Log Analytics\nshared, existing"]
+  az_general_Resource__connectivity["connectivity module\nhub VNet, Front Door, App Gateway, DNS, peering\nshared, existing"]
+  az_general_Resource__application["application module - entitlement-engine\nthis project: spoke subnets, apps, data, PaaS, private endpoints"]
+
+  az_general_Developertools__tf_root --> az_general_Resource__landing_zone
+  az_general_Developertools__tf_root --> az_general_Resource__connectivity
+  az_general_Developertools__tf_root --> az_general_Resource__application

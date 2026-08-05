@@ -1,0 +1,11 @@
+%% m2d: strict = true %%
+%% m2d: title = Entitlement Platform - Phasing Roadmap %%
+%% m2d: source = internal architecture %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_general_Resource__phase1["Phase 1\nRead API + projection\nD365 master, mgmt in D365"]
+  az_general_Resource__phase2["Phase 2\nExternal evaluation + mgmt\ndata still in Dataverse\nplug-in retired"]
+  az_general_Resource__phase3["Phase 3\nPostgreSQL = record for\nresolved entitlements\nDataverse tables decommissioned"]
+
+  az_general_Resource__phase1 --> az_general_Resource__phase2
+  az_general_Resource__phase2 --> az_general_Resource__phase3

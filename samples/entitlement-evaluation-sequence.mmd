@@ -1,0 +1,22 @@
+%% m2d: strict = true %%
+%% m2d: title = Entitlement Evaluation - Payment to Projection Flow %%
+%% m2d: source = internal architecture (translated from sequence diagram) %%
+%% m2d: convention = az_<category>_<ClassName>__<logicalId> %%
+flowchart LR
+  az_general_Resource__stripe["Stripe"]
+  az_compute_FunctionApps__payment_service["Payment Service"]
+  az_general_Resource__dataverse["Dataverse"]
+  az_integration_ServiceBus__service_bus["Service Bus"]
+  az_compute_FunctionApps__evaluation_service["Evaluation Service"]
+  az_database_DatabaseForPostgresqlServers__pg["PostgreSQL"]
+  az_database_CacheForRedis__cache["Redis and FusionCache"]
+
+  az_general_Resource__stripe -->|1. invoice.paid or subscription.updated| az_compute_FunctionApps__payment_service
+  az_compute_FunctionApps__payment_service -->|2. write Order and Payment Schedule| az_general_Resource__dataverse
+  az_general_Resource__dataverse -->|3. change event via service endpoint, for contactId and sector| az_integration_ServiceBus__service_bus
+  az_integration_ServiceBus__service_bus -->|4. deliver| az_compute_FunctionApps__evaluation_service
+  az_compute_FunctionApps__evaluation_service -->|5. read Order, Product Entitlements, Verification, Payment Schedule via ACL| az_general_Resource__dataverse
+  az_compute_FunctionApps__evaluation_service -->|6. validate and resolve, positive-only, failures resolved pre-write| az_compute_FunctionApps__evaluation_service
+  az_compute_FunctionApps__evaluation_service -->|7. upsert resolved entitlements, Phase 2 record| az_general_Resource__dataverse
+  az_compute_FunctionApps__evaluation_service -->|8. upsert projection, Phase 3 record| az_database_DatabaseForPostgresqlServers__pg
+  az_compute_FunctionApps__evaluation_service -->|9. invalidate keys for contact| az_database_CacheForRedis__cache
